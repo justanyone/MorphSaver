@@ -5,3 +5,5 @@
 - Keep all output in this worktree. Do not change scanner code.
 - Retain defaults unless measured packet judgments support a change.
 - Run offline focused tests and the final gate. Record missing inputs.
+- Found three large local trees. Check repository identity before selecting two. The CLI writes into its target, so use worktree-local copies.
+- Selected two distinct local projects. Copied Python source only to ignored worktree-local calibration inputs. No external writes. Next: scan and time each pipeline step.
