@@ -13,3 +13,4 @@
 - Repo A has not produced scan output after several minutes. Started an independent 180 s bounded run on repo B so both inputs get an attempt. Preserve absent precision as unmeasured, not zero.
 - Started the final offline gate. Both large scan attempts still lack candidate output. No scanner or policy default changed.
 - Gate GREEN in 4.964 s: ruff, 77 tests, self-scan (18 files, 3 candidates). Repo B produced 274 candidates; packet review awaits ranking.
+- Retry both source-only scans with an explicit src include policy and optional tool executables absent from PATH. This tests the standard-library baseline and avoids external graph enrichment. Thresholds stay at defaults.
