@@ -18,3 +18,17 @@ jobs:
       - run: ruff check morphsaver tests
       - run: python -m pytest -q
       - run: python -m morphsaver scan . --out /tmp/self.json
+  install:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m venv /tmp/clean-venv
+      - run: /tmp/clean-venv/bin/pip install .
+      - run: /tmp/clean-venv/bin/morphsaver --version
+      - run: /tmp/clean-venv/bin/morphsaver run tests/fixtures/dispatch
