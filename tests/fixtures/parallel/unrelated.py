@@ -14,4 +14,4 @@ def sample(values):
     return list(values)
 
 
-__all__ = ['count', 'render', 'decode', 'sample']
+__all__ = ['count', 'decode', 'render', 'sample']

@@ -35,14 +35,19 @@ def _module_names(rel: str) -> tuple[str, str]:
     return (package if path.stem == "__init__" else module), package
 
 
+def _import_base(node: ast.ImportFrom, package: str) -> str:
+    base = node.module or ""
+    if node.level:
+        parts = package.split(".")
+        base = ".".join(parts[:len(parts) - node.level + 1] + ([base] if base else []))
+    return base
+
+
 def _import_aliases(tree, package: str) -> dict[str, str]:
     aliases = {}
     for node in tree.body:
         if isinstance(node, ast.ImportFrom):
-            base = node.module or ""
-            if node.level:
-                parts = package.split(".")
-                base = ".".join(parts[:len(parts) - node.level + 1] + ([base] if base else []))
+            base = _import_base(node, package)
             for alias in node.names:
                 aliases[alias.asname or alias.name] = f"{base}.{alias.name}"
         elif isinstance(node, ast.Import):
@@ -52,7 +57,7 @@ def _import_aliases(tree, package: str) -> dict[str, str]:
     return aliases
 
 
-def _function_record(node, rel: str, name: str) -> Function:
+def _function_record(node: ast.FunctionDef | ast.AsyncFunctionDef, rel: str, name: str) -> Function:
     skeleton = tuple(type(n).__name__ for stmt in node.body for n in ast.walk(stmt))
     end_line = node.end_lineno or node.body[-1].end_lineno or node.body[-1].lineno
     site = Site(rel, node.lineno, end_line, name, arms=1,
