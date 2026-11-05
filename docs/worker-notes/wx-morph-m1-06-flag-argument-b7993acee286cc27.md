@@ -1,1 +1,3 @@
 - Plan: fixture tests/fixtures/flag (TP + FP), then flag_argument.py scanner, then test. Mirror dispatch_chain visitor.
+- Wrote fixture, scanner, tests. Running focused tests.
+- Gate GREEN. Committed. Done.
