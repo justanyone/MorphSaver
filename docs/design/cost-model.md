@@ -50,3 +50,9 @@ The other numeric policy constants are in `[thresholds]`:
 | `skeleton_similarity` | Minimum function shape similarity | 0.8 |
 | `top` | Default packet count | 25 |
 | `packet_max_lines` | Maximum lines per packet | 400 |
+
+Radon JSON can report numeric complexity without a rank letter.
+Rank converts scores 0–5 to A, 6–10 to B, 11–20 to C,
+21–30 to D, 31–40 to E, and 41 or more to F.
+These ranges define Radon ranks. They are not score weights.
+Invalid complexity values add no hot code.
