@@ -54,3 +54,7 @@ judge skill are open tickets in `docs/tasks.md`.
 ## License
 
 MIT. Copyright (c) 2026 Kevin J. Rice.
+
+## Development cycles
+
+- dev-001 started 2026-11-04: milestone 1 (scan, rank, packet, markdown emit for Python).

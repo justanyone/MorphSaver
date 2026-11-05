@@ -17,6 +17,12 @@ Design in `docs/design/architecture.md`; decisions in `docs/adr/`; tickets in `d
 - Tests under 1 minute total. `tools/test.sh` runs them; `tools/gate.sh` is the merge gate.
 - Keep MorphSaver's own policy in `.morphsaver/policy.toml`; the gate scans this repo with itself.
 
+## Branches and pull requests
+`main` is release-only; work happens on the standing `dev-NNN` branch (now `dev-001`) and lands there only through task pull
+requests merged with a merge commit after review and a green `tools/gate.sh`. A standing PR `dev-NNN → main` stays open for the
+cycle; closing a cycle and starting the next is the `.claude/skills/close-pr/SKILL.md` procedure. Nobody pushes to `dev-NNN` or
+`main` by hand after the cycle-start commit.
+
 ## Working a ticket from docs/tasks.md
 1. Read the ticket's acceptance criteria. They are the definition of done.
 2. Add or update the fixture first, then the code.
