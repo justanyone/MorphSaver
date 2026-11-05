@@ -152,9 +152,13 @@ def scan_all(records: list[Records], policy) -> list[Candidate]:
         groups.update(tuple(sorted(cluster)) for _, cluster in clusters if len(cluster) >= 3)
 
     found = []
-    for group in sorted(groups):
-        if any(set(group) < set(other) for other in groups):
+    covering = defaultdict(list)
+    for group in sorted(groups, key=lambda g: (-len(g), g)):
+        members = frozenset(group)
+        if any(members <= other for other in covering[group[0]]):
             continue
+        for key in group:
+            covering[key].append(members)
         sites = [functions[key].site for key in group]
         identity = json.dumps([(s.file, s.function, s.discriminator) for s in sites])
         digest = hashlib.sha256(identity.encode()).hexdigest()[:16]
