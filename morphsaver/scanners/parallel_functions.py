@@ -28,60 +28,71 @@ class Records:
     tables: tuple[tuple[str, ...], ...]
 
 
-def collect(tree, rel: str, policy) -> Records:
-    """Return a per-file side output. References use absolute module names."""
+def _module_names(rel: str) -> tuple[str, str]:
     path = PurePosixPath(rel)
     module = ".".join(path.with_suffix("").parts)
     package = module.rsplit(".", 1)[0] if path.parent != PurePosixPath(".") else ""
-    if path.stem == "__init__":
-        module = package
+    return (package if path.stem == "__init__" else module), package
+
+
+def _import_aliases(tree, package: str) -> dict[str, str]:
     aliases = {}
     for node in tree.body:
         if isinstance(node, ast.ImportFrom):
             base = node.module or ""
             if node.level:
-                parts = module.split(".") if path.stem == "__init__" else package.split(".")
+                parts = package.split(".")
                 base = ".".join(parts[:len(parts) - node.level + 1] + ([base] if base else []))
             for alias in node.names:
                 aliases[alias.asname or alias.name] = f"{base}.{alias.name}"
         elif isinstance(node, ast.Import):
             for alias in node.names:
-                aliases[alias.asname or alias.name.split(".")[0]] = alias.name if alias.asname else alias.name.split(".")[0]
+                root = alias.name.split(".")[0]
+                aliases[alias.asname or root] = alias.name if alias.asname else root
+    return aliases
 
-    functions = []
 
-    def visit(node, scope=""):
-        for child in ast.iter_child_nodes(node):
-            if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-                name = f"{scope}.{child.name}" if scope else child.name
-                if not isinstance(child, ast.ClassDef):
-                    skeleton = tuple(type(n).__name__ for stmt in child.body for n in ast.walk(stmt))
-                    site = Site(rel, child.lineno, child.end_lineno, name, arms=1,
-                                lines=child.end_lineno - child.body[0].lineno + 1,
-                                discriminator="family", kind="function")
-                    functions.append(Function(site, child.name, skeleton))
-                visit(child, name)
-            else:
-                visit(child, scope)
+def _function_record(node, rel: str, name: str) -> Function:
+    skeleton = tuple(type(n).__name__ for stmt in node.body for n in ast.walk(stmt))
+    end_line = node.end_lineno or node.body[-1].end_lineno or node.body[-1].lineno
+    site = Site(rel, node.lineno, end_line, name, arms=1,
+                lines=end_line - node.body[0].lineno + 1,
+                discriminator="family", kind="function")
+    return Function(site, node.name, skeleton)
 
-    visit(tree)
 
-    def reference(node):
-        if isinstance(node, ast.Name):
-            return aliases.get(node.id, f"{module}.{node.id}")
-        if isinstance(node, ast.Attribute):
-            base = reference(node.value)
-            return f"{base}.{node.attr}" if base else ""
-        return ""
+def _functions(node, rel: str, scope: str = ""):
+    for child in ast.iter_child_nodes(node):
+        name = scope
+        if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            name = f"{scope}.{child.name}" if scope else child.name
+            if not isinstance(child, ast.ClassDef):
+                yield _function_record(child, rel, name)
+        yield from _functions(child, rel, name)
 
-    # Only module-level tables establish affinity. Function-local names can shadow imports.
-    tables = []
+
+def _reference(node, module: str, aliases: dict[str, str]) -> str:
+    if isinstance(node, ast.Name):
+        return aliases.get(node.id, f"{module}.{node.id}")
+    if isinstance(node, ast.Attribute):
+        base = _reference(node.value, module, aliases)
+        return f"{base}.{node.attr}" if base else ""
+    return ""
+
+
+def _tables(tree, module: str, aliases: dict[str, str]):
+    # Function-local names can shadow imports. Only module tables establish affinity.
     for statement in tree.body:
-        if isinstance(statement, (ast.Assign, ast.AnnAssign)):
-            value = statement.value
-            if isinstance(value, ast.Dict):
-                tables.append(tuple(sorted({ref for v in value.values if (ref := reference(v))})))
-    return Records(rel, tuple(functions), tuple(tables))
+        if isinstance(statement, (ast.Assign, ast.AnnAssign)) and isinstance(statement.value, ast.Dict):
+            yield tuple(sorted({ref for value in statement.value.values
+                                if (ref := _reference(value, module, aliases))}))
+
+
+def collect(tree, rel: str, policy) -> Records:
+    """Return a per-file side output. References use absolute module names."""
+    module, package = _module_names(rel)
+    aliases = _import_aliases(tree, package)
+    return Records(rel, tuple(_functions(tree, rel)), tuple(_tables(tree, module, aliases)))
 
 
 def scan(tree, rel: str, policy) -> list[Candidate]:
@@ -89,22 +100,15 @@ def scan(tree, rel: str, policy) -> list[Candidate]:
     return scan_all([collect(tree, rel, policy)], policy)
 
 
-def scan_all(records: list[Records], policy) -> list[Candidate]:
-    """Group by affinity, then require pairwise skeleton similarity within each group."""
-    threshold = policy.skeleton_similarity
-    if not 0 <= threshold <= 1:
-        raise ValueError("skeleton_similarity must be between 0 and 1")
-    files = {r.file: r for r in records}
+def _index_functions(files):
     functions = {}
     references = {}
     buckets = defaultdict(set)
     for rel, record in sorted(files.items()):
-        path = PurePosixPath(rel)
-        module = ".".join(path.with_suffix("").parts)
-        if path.stem == "__init__":
-            module = ".".join(path.parent.parts)
+        module, _ = _module_names(rel)
+        parent = str(PurePosixPath(rel).parent)
         # Root modules share no package. A directory defines one scan-local package.
-        scope = str(path.parent) if str(path.parent) != "." else rel
+        scope = parent if parent != "." else rel
         for function in record.functions:
             key = (rel, function.site.function)
             functions[key] = function
@@ -112,6 +116,10 @@ def scan_all(records: list[Records], policy) -> list[Candidate]:
             if len(function.name) >= 4:
                 buckets[(scope, "prefix", function.name[:4])].add(key)
                 buckets[(scope, "suffix", function.name[-4:])].add(key)
+    return functions, references, buckets
+
+
+def _add_table_buckets(files, references, buckets):
     for rel, record in sorted(files.items()):
         parent = PurePosixPath(rel).parent
         for index, table in enumerate(record.tables):
@@ -120,6 +128,8 @@ def scan_all(records: list[Records], policy) -> list[Candidate]:
                 if key and (key[0] == rel or (str(parent) != "." and PurePosixPath(key[0]).parent == parent)):
                     buckets[(rel, "table", str(index))].add(key)
 
+
+def _similarity_test(threshold: float):
     similarities = {}
 
     def similar(left, right):
@@ -133,24 +143,35 @@ def scan_all(records: list[Records], policy) -> list[Candidate]:
                                   and matcher.ratio() >= threshold)
         return similarities[pair]
 
-    groups = set()
-    for members in buckets.values():
-        if len(members) < 3:
-            continue
-        by_skeleton = defaultdict(set)
-        for key in sorted(members):
-            by_skeleton[functions[key].skeleton].add(key)
-        clusters = []
-        for skeleton, keys in by_skeleton.items():
-            for shapes, cluster in clusters:
-                if all(similar(skeleton, shape) for shape in shapes):
-                    shapes.append(skeleton)
-                    cluster.update(keys)
-                    break
-            else:
-                clusters.append(([skeleton], set(keys)))
-        groups.update(tuple(sorted(cluster)) for _, cluster in clusters if len(cluster) >= 3)
+    return similar
 
+
+def _cluster_members(members, functions, similar):
+    by_skeleton = defaultdict(set)
+    for key in sorted(members):
+        by_skeleton[functions[key].skeleton].add(key)
+    clusters = []
+    for skeleton, keys in by_skeleton.items():
+        for shapes, cluster in clusters:
+            if all(similar(skeleton, shape) for shape in shapes):
+                shapes.append(skeleton)
+                cluster.update(keys)
+                break
+        else:
+            clusters.append(([skeleton], keys.copy()))
+    return (tuple(sorted(cluster)) for _, cluster in clusters if len(cluster) >= 3)
+
+
+def _candidate(sites: list[Site], policy) -> Candidate:
+    identity = json.dumps([(s.file, s.function, s.discriminator) for s in sites])
+    digest = hashlib.sha256(identity.encode()).hexdigest()[:16]
+    levels = {"none": 0, "caution": 1, "deny": 2}
+    level = max((policy.path_policy(s.file) for s in sites), key=levels.__getitem__)
+    return Candidate(f"{NAME}-{digest}", NAME, sites, discriminator_kind="family",
+                     shape="template-method", policy=level)
+
+
+def _candidates(groups, functions, policy) -> list[Candidate]:
     found = []
     covering = defaultdict(list)
     for group in sorted(groups, key=lambda g: (-len(g), g)):
@@ -159,10 +180,21 @@ def scan_all(records: list[Records], policy) -> list[Candidate]:
             continue
         for key in group:
             covering[key].append(members)
-        sites = [functions[key].site for key in group]
-        identity = json.dumps([(s.file, s.function, s.discriminator) for s in sites])
-        digest = hashlib.sha256(identity.encode()).hexdigest()[:16]
-        level = max((policy.path_policy(s.file) for s in sites), key={"none": 0, "caution": 1, "deny": 2}.get)
-        found.append(Candidate(f"{NAME}-{digest}", NAME, sites, discriminator_kind="family",
-                               shape="template-method", policy=level))
+        found.append(_candidate([functions[key].site for key in group], policy))
     return found
+
+
+def scan_all(records: list[Records], policy) -> list[Candidate]:
+    """Group by affinity, then require pairwise skeleton similarity within each group."""
+    threshold = policy.skeleton_similarity
+    if not 0 <= threshold <= 1:
+        raise ValueError("skeleton_similarity must be between 0 and 1")
+    files = {r.file: r for r in records}
+    functions, references, buckets = _index_functions(files)
+    _add_table_buckets(files, references, buckets)
+    similar = _similarity_test(threshold)
+    groups = set()
+    for members in buckets.values():
+        if len(members) >= 3:
+            groups.update(_cluster_members(members, functions, similar))
+    return _candidates(groups, functions, policy)
