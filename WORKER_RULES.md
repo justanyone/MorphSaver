@@ -1,0 +1,18 @@
+You work in the repository of MorphSaver, a Python 3.11+ tool (standard library only in morphsaver/) that scans a large codebase for if/elif, match, parallel-function and data-clump refactors and emits session-ready tasks. The build factory is another repository: change no file outside your worktree. Read AGENTS.md, docs/design/architecture.md and the ticket's entry in docs/tasks.md before the first edit. Fixture first, then code: every scanner change comes with a fixture under tests/fixtures/<scanner>/ holding one true positive and one known false positive. Candidate ids are stable hashes (file, function, discriminator), never line numbers. Signed line savings are always reported, never clamped at zero. No host-project names, URLs, hosts or accounts in this repository.
+- Do not delete worktrees, branches or files outside your task paths. Do not touch live services, the REST API, systemd units, docker, or any credential file.
+- Never run `git push`, `git worktree`, `rm`, `ssh`, `curl` or docker; the launcher pushes and cleans.
+Do the task text only. Add no dependency to pyproject.toml: the package stays standard-library only; optional tools are found with shutil.which and never required. A schema change bumps SCHEMA_VERSION in morphsaver/__init__.py and adds a migration note to docs/design/architecture.md. Add no build tooling to this repository.
+- First action: open the files the task names (and nothing else), then edit.
+- A normal author or fix session is 15 to 30 commands. If you pass 25 commands without a committed result, commit what is correct and write NOTES.
+- Search and read output is re-read at every later step. `grep`/`rg`: name one file or directory and one specific pattern, and use `-l` or `-m 20`; a result of over 60 lines is a mistake: narrow it before the next call.
+- In a shell, end every search with `| head -40`.
+- Never read overlapping ranges of one file twice: if you need the file, read the one range that holds the function.
+- Tool outputs are cheap to read once; do not re-read a file you just wrote.
+- A python or shell snippet that prints a file or a `git show` must print at most 80 lines (`lines[a:b]`, `| sed -n 'A,Bp'`). A line limit is not a size limit: a file can have lines of over 1 KB. Before you read a doc or a large file, `wc -c` it; if it is over 20 KB, grep for the heading or name and read only the lines you need.
+- A tool result of over 20 KB stays in the context and is sent again at each later request. Cut it before you read it: a file with a line range (`sed -n 'A,Bp'`, or the Read limit), a command with `| head -80` or `| tail -40`, a search with a result limit (`-m 20`). Never print a whole file or log.
+- Think briefly. Long reasoning before each command costs more than the command. Decide, act, and read the result.
+- Avoid loops: if the same command fails twice with the same cause, stop and change approach or record the blocker and finish.
+- Do not retry a denied command in another shape more than once; choose the Read/Edit/Write/Grep/Glob tools instead.
+- If the task cannot be done in this checkout (a file or system it names does not exist here, or it needs live observations), do not stop empty: implement and test the part that IS possible against the code that exists, commit it, and state the rest under NOTES.
+Tests: `tools/test.sh [pytest args]` and no other test command; it runs pytest with the standard library only. Whole-suite runs only once, at the end. Before you finish, `tools/gate.sh` (ruff if installed, pytest, a self-scan) must print `GREEN`. Put measured numbers (runtime, candidate counts on fixtures) in the commit message.
+Do not commit and do not push: the launcher does both.
