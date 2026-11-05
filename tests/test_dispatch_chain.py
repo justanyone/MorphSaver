@@ -96,3 +96,89 @@ def test_attribute_and_call_subjects_are_one_discriminator():
     found = _scan_src(src)
     assert len(found) == 1 and found[0].sites[0].discriminator == "token.kind()"
     assert found[0].values == ("a", "b", "c")
+
+
+REPEATED = Path(__file__).parent / "fixtures" / "repeated"
+
+
+def _repeated_singles(folder, policy=None):
+    policy = policy or Policy()
+    return [candidate for path in sorted((REPEATED / folder).glob("*.py"))
+            for candidate in dispatch_chain.scan(ast.parse(path.read_text()), path.name, policy)]
+
+
+def test_repeated_jaccard_across_files_and_policy():
+    policy = Policy(caution=["second.py"], deny=["third.py"])
+    singles = _repeated_singles("overlap", policy)
+    groups = repeated_dispatch.scan_all(singles, policy)
+    assert len(groups) == 1
+    group = groups[0]
+    assert group.values == ("A", "B", "C", "D")
+    assert len(group.sites) == 3 and group.policy == "deny"
+    assert group.shape == "strategy-classes"
+    assert {s.discriminator for s in group.sites} == {"kind", "category", "tag"}
+    assert repeated_dispatch.scan_all(singles, Policy(jaccard=0.8))[0].sites == group.sites[:2]
+    assert not repeated_dispatch.scan_all(singles, Policy(min_sites=4))
+
+
+def test_repeated_weak_overlap_is_not_a_group():
+    assert not repeated_dispatch.scan_all(_repeated_singles("weak"), Policy())
+
+
+def test_repeated_enum_bare_and_literal_names_group():
+    groups = repeated_dispatch.scan_all(_repeated_singles("enum"), Policy())
+    assert len(groups) == 1 and len(groups[0].sites) == 4
+    assert groups[0].values == ("A", "B", "C", "D")
+
+
+def test_normalise_preserves_dotted_literals_and_numbers():
+    assert dispatch_chain.normalise("domain.Kind.A") == "A"
+    assert dispatch_chain.normalise("'domain.Kind.A'") == "domain.Kind.A"
+    assert dispatch_chain.normalise("1.25") == "1.25"
+
+
+def test_repeated_is_order_independent_and_does_not_keep_state():
+    from concurrent.futures import ThreadPoolExecutor
+
+    singles = _repeated_singles("overlap")
+    before = [c.to_json() for c in singles]
+    expected = [c.to_json() for c in repeated_dispatch.scan_all(singles, Policy())]
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        results = list(pool.map(lambda items: [c.to_json() for c in repeated_dispatch.scan_all(items, Policy())],
+                                [singles, list(reversed(singles)), singles + singles]))
+    assert results == [expected] * 3
+    assert [c.to_json() for c in singles] == before
+    assert not repeated_dispatch.scan_all([], Policy())
+
+
+def test_repeated_id_depends_only_on_value_union():
+    from dataclasses import replace
+
+    singles = _repeated_singles("overlap")
+    original = repeated_dispatch.scan_all(singles, Policy())[0]
+    moved = [replace(c, id=f"moved-{i}", sites=[replace(s, file=f"moved-{i}.py", line=s.line + 20)
+                                              for s in c.sites]) for i, c in enumerate(singles)]
+    assert repeated_dispatch.scan_all(moved, Policy())[0].id == original.id
+    assert repeated_dispatch.scan_all(singles[:2], Policy())[0].id == original.id
+
+
+def test_repeated_rejects_invalid_jaccard():
+    import pytest
+
+    for threshold in (-0.1, 1.1, float("nan")):
+        with pytest.raises(ValueError, match="jaccard"):
+            repeated_dispatch.scan_all([], Policy(jaccard=threshold))
+
+
+def test_repeated_threshold_boundary_and_transitive_union():
+    from dataclasses import replace
+
+    singles = _repeated_singles("overlap")
+    # Adjacent sets share 3 of 5 union values (0.6). The end sets share only 2 of 6.
+    values = [("A", "B", "C", "D"), ("B", "C", "D", "E"), ("C", "D", "E", "F")]
+    singles = [replace(c, values=v, sites=[replace(c.sites[0], values=v)]) for c, v in zip(singles, values)]
+    groups = repeated_dispatch.scan_all(singles, Policy())
+    assert len(groups) == 1 and len(groups[0].sites) == 3
+    assert groups[0].values == ("A", "B", "C", "D", "E", "F")
+    assert not repeated_dispatch.scan_all(singles, Policy(jaccard=0.61))
+    assert repeated_dispatch.scan_all(list(reversed(singles)), Policy())[0].to_json() == groups[0].to_json()

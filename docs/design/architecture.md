@@ -1,6 +1,6 @@
 # MorphSaver architecture
 
-Status: design accepted 2026-11-04 by the owner (interview). Built so far: `dispatch_chain`, exact-value `repeated_dispatch`,
+Status: design accepted 2026-11-04 by the owner (interview). Built so far: `dispatch_chain`, Jaccard `repeated_dispatch`,
 rank, packet, markdown emit, CLI, fixtures. Everything else is a ticket in [tasks.md](../tasks.md).
 
 ## 1. Problem
@@ -62,7 +62,7 @@ A scanner is a module with `NAME` and `scan(tree, rel_path, policy) -> list[Cand
 | Scanner | Signal | Supports |
 |---|---|---|
 | `dispatch_chain` (built) | if/elif or `match` with ≥ `min_arms` arms on one discriminator: name, attribute, subscript, `isinstance`, `type(x) is`, `in {set}`. Records discriminator kind: literal-set, enum, type, flag, mixed. | Polymorphism, or a dict table when single-site with one-line arms |
-| `repeated_dispatch` (exact-set version built) | `dispatch_chain` hits grouped by normalised value set (quotes stripped, enum class stripped, type names), ignoring the discriminator's spelling. Jaccard ≥ 0.6, ≥ 2 sites. The JDeodorant/Fowler signal and the one that reliably saves lines. | Polymorphism: one class per value, one method per site |
+| `repeated_dispatch` (built) | `dispatch_chain` hits grouped by normalised value set (quotes stripped, enum class stripped, type names), ignoring the discriminator's spelling. Pairwise Jaccard ≥ `policy.jaccard` joins chains into connected groups, ≥ 2 sites. The JDeodorant/Fowler signal and the one that reliably saves lines. | Polymorphism: one class per value, one method per site |
 | `parallel_functions` | ≥ 3 functions in one module (or ≥ 3 modules in one package) whose AST skeleton (identifiers and constants erased) matches ≥ 0.8, with name affinity (shared prefix/suffix or selected by a table) | Template Method or Strategy |
 | `data_clump` | The same ≥ 3 parameter names in ≥ 4 signatures, or the same ≥ 3 dict keys read together in ≥ 4 places | Parameter object / dataclass; often a prerequisite |
 | `flag_argument` | Boolean parameter tested at the top of ≥ 2 branches | Split function or Strategy |

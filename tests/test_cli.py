@@ -14,10 +14,13 @@ def test_run_pipeline_on_fixture(tmp_path):
     target.mkdir()
     for f in FIXTURES.glob("*.py"):
         (target / f.name).write_text(f.read_text())
+    for source in (FIXTURES.parent / "repeated" / "overlap").glob("*.py"):
+        (target / source.name).write_text(source.read_text())
     assert main(["run", str(target), "--run", "t1", "--top", "3"]) == 0
     rd = target / ".morphsaver" / "runs" / "t1"
     candidates, meta = read_file(rd / "candidates.json")
-    assert meta["files"] == 4 and len(candidates) == 12  # 9 dispatch_chain + 3 repeated_dispatch (false_positives.py added by M1-02)
+    # Three overlap fixtures add 3 chains and a group with the existing enum chain.
+    assert meta["files"] == 7 and len(candidates) == 16  # 12 dispatch_chain + 4 repeated_dispatch
     ranked, _ = read_file(rd / "ranked.json")
     assert ranked[0].scanner == "repeated_dispatch"             # the group outranks every single site
     assert all(c.lines_saved == c.dup_lines - c.overhead_lines for c in ranked)
@@ -28,12 +31,14 @@ def test_run_pipeline_on_fixture(tmp_path):
 def test_rank_is_deterministic(tmp_path):
     target = tmp_path / "repo"
     target.mkdir()
-    (target / "a.py").write_text((FIXTURES / "chains.py").read_text())
+    for source in (FIXTURES.parent / "repeated" / "overlap").glob("*.py"):
+        (target / source.name).write_text(source.read_text())
     main(["run", str(target), "--run", "r1"])
     main(["run", str(target), "--run", "r2"])
-    a = (target / ".morphsaver/runs/r1/ranked.json").read_text()
-    b = (target / ".morphsaver/runs/r2/ranked.json").read_text()
-    assert a == b
+    for filename in ("ranked.json", "candidates.json"):
+        a = (target / ".morphsaver/runs/r1" / filename).read_bytes()
+        b = (target / ".morphsaver/runs/r2" / filename).read_bytes()
+        assert a == b
 
 
 def test_emit_markdown_from_verdicts(tmp_path):
