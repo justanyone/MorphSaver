@@ -1,3 +1,0 @@
-- Plan: add flag/type/attr-call kinds + all_return to dispatch_chain, fixture first, tests after.
-- fixtures written (chains.py flag+type_is, false_positives.py). Next: scanner edits, all_return field, tests.
-- 2026-11-05T04:13:34Z launcher: no commit for 61 s; 153 s elapsed. Files changed so far: docs/worker-notes/wx-morph-m1-02-dispatch-kinds-bfc0537e73d1d940.md, morphsaver/model.py, morphsaver/scanners/dispatch_chain.py, tests/fixtures/dispatch/chains.py, tests/fixtures/dispatch/false_positives.py, tests/test_dispatch_chain.py.
