@@ -1,0 +1,1 @@
+- Plan: add flag/type/attr-call kinds + all_return to dispatch_chain, fixture first, tests after.
