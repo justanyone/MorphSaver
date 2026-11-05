@@ -67,7 +67,7 @@ def test_invalid_similarity(threshold):
 
 def test_similarity_threshold_and_package_name_affinity():
     source = (FIXTURES / "results.py").read_text()
-    source = source.replace("result = value + 4", "result = value + 4\n    print(result)")
+    source = source.replace("result = value + 4", "result = -(value + 4)")
     tree = ast.parse(source)
     assert len(scanner.scan(tree, "results.py", Policy())[0].sites) == 4
     assert len(scanner.scan(tree, "results.py", Policy(skeleton_similarity=1))[0].sites) == 3
@@ -78,3 +78,21 @@ def test_similarity_threshold_and_package_name_affinity():
     separate = [scanner.collect(ast.Module(body=nodes[:2], type_ignores=[]), "a.py", Policy()),
                 scanner.collect(ast.Module(body=nodes[2:], type_ignores=[]), "b.py", Policy())]
     assert scanner.scan_all(separate, Policy()) == []
+
+
+def test_cli_cross_file_side_output(tmp_path):
+    from argparse import Namespace
+    from morphsaver.cli import cmd_scan
+    from morphsaver.model import read_file
+
+    package = tmp_path / "package"
+    package.mkdir()
+    for name in ("first.py", "second.py"):
+        (package / name).write_text((FIXTURES / "package" / name).read_text())
+    args = Namespace(target=str(tmp_path), out=str(tmp_path / "out.json"), run="test")
+    cmd_scan(args)
+    output = (tmp_path / "out.json").read_bytes()
+    candidates, _ = read_file(tmp_path / "out.json")
+    assert len(candidates) == 1 and len(candidates[0].sites) == 3
+    cmd_scan(args)
+    assert (tmp_path / "out.json").read_bytes() == output
