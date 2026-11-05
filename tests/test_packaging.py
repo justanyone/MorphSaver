@@ -17,7 +17,7 @@ def test_version_is_0_1_0_everywhere(capsys):
     assert exc.value.code == 0
     assert capsys.readouterr().out.strip() == "0.1.0"
     pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
-    assert re.search(r'^version = "0\.1\.0"$', pyproject, re.M)
+    assert re.search(r'^version = "0\.1\.0"$', pyproject, re.MULTILINE)
 
 
 def test_run_with_out_fails_cleanly_instead_of_crashing(tmp_path, capsys):
