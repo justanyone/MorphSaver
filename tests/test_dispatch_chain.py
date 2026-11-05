@@ -127,7 +127,7 @@ def test_repeated_weak_overlap_is_not_a_group():
 
 def test_repeated_enum_bare_and_literal_names_group():
     groups = repeated_dispatch.scan_all(_repeated_singles("enum"), Policy())
-    assert len(groups) == 1 and len(groups[0].sites) == 3
+    assert len(groups) == 1 and len(groups[0].sites) == 4
     assert groups[0].values == ("A", "B", "C", "D")
 
 
