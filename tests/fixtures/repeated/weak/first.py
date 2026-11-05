@@ -7,3 +7,6 @@ def render(kind):
         return 2
     elif kind == 'D':
         return 3
+
+
+render('A')

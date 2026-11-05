@@ -17,3 +17,6 @@ def render(kind):
         return 2
     elif kind == Kind.D:
         return 3
+
+
+render(Kind.A)

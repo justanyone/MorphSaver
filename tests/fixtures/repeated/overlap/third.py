@@ -5,3 +5,6 @@ def describe(tag):
         return 1
     elif tag == 'C':
         return 2
+
+
+describe('A')

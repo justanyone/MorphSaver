@@ -118,11 +118,11 @@ def test_repeated_jaccard_across_files_and_policy():
     assert group.shape == "strategy-classes"
     assert {s.discriminator for s in group.sites} == {"kind", "category", "tag"}
     assert repeated_dispatch.scan_all(singles, Policy(jaccard=0.8))[0].sites == group.sites[:2]
-    assert repeated_dispatch.scan_all(singles, Policy(min_sites=4)) == []
+    assert not repeated_dispatch.scan_all(singles, Policy(min_sites=4))
 
 
 def test_repeated_weak_overlap_is_not_a_group():
-    assert repeated_dispatch.scan_all(_repeated_singles("weak"), Policy()) == []
+    assert not repeated_dispatch.scan_all(_repeated_singles("weak"), Policy())
 
 
 def test_repeated_enum_bare_and_literal_names_group():
@@ -142,7 +142,7 @@ def test_repeated_is_order_independent_and_does_not_keep_state():
                                 [singles, list(reversed(singles)), singles + singles]))
     assert results == [expected] * 3
     assert [c.to_json() for c in singles] == before
-    assert repeated_dispatch.scan_all([], Policy()) == []
+    assert not repeated_dispatch.scan_all([], Policy())
 
 
 def test_repeated_id_depends_only_on_value_union():
@@ -174,5 +174,5 @@ def test_repeated_threshold_boundary_and_transitive_union():
     groups = repeated_dispatch.scan_all(singles, Policy())
     assert len(groups) == 1 and len(groups[0].sites) == 3
     assert groups[0].values == ("A", "B", "C", "D", "E", "F")
-    assert repeated_dispatch.scan_all(singles, Policy(jaccard=0.61)) == []
+    assert not repeated_dispatch.scan_all(singles, Policy(jaccard=0.61))
     assert repeated_dispatch.scan_all(list(reversed(singles)), Policy())[0].to_json() == groups[0].to_json()
