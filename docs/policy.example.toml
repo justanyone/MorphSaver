@@ -1,0 +1,22 @@
+# Copy to <your repo>/.morphsaver/policy.toml and commit it. Run outputs go to .morphsaver/runs/ (git-ignore them).
+[thresholds]
+min_arms = 3              # arms a chain needs before it is a candidate
+min_sites = 2             # sites a repeated_dispatch group needs
+jaccard = 0.6             # value-set overlap for repeated_dispatch
+skeleton_similarity = 0.8 # AST-skeleton similarity for parallel_functions
+top = 25                  # packets per run
+packet_max_lines = 400
+
+[weights]
+class_overhead = 4        # lines one subclass costs
+base_overhead = 6         # lines the base class costs
+sites_weight = 1.5        # multiplier on a positive saving when more than one site collapses
+site_bonus = 2.0          # added per extra site, whatever the sign of the saving
+risk_weight = 0.2         # per caller (needs CodeGraph)
+no_tests_penalty = 10.0
+
+[paths]
+include = ["src/**/*.py"]
+exclude = ["**/tests/**", "**/migrations/**"]
+deny = []                 # glob list; a hit here is never reported
+caution = ["src/core/state_machine.py"]   # reported with policy=caution; verdict must be ask-owner

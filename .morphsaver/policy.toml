@@ -1,0 +1,11 @@
+# MorphSaver policy for this repository (MorphSaver scans itself in the gate). Every key is optional.
+[thresholds]
+min_arms = 3
+min_sites = 2
+top = 25
+
+[paths]
+include = ["**/*.py"]
+exclude = ["**/tests/**"]
+# deny = []      # never report; nothing is denied by default
+# caution = []   # report with policy=caution; the judge must answer ask-owner

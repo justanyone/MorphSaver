@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "morphsaver"
+version = "0.0.1"
+description = "Find conditional-to-polymorphism and parallel-structure refactors in large codebases and emit session-ready tasks."
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [{ name = "Kevin J. Rice" }]
+requires-python = ">=3.11"
+dependencies = []
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Topic :: Software Development :: Quality Assurance",
+]
+
+[project.optional-dependencies]
+tools = ["ruff>=0.6", "radon>=6"]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[project.scripts]
+morphsaver = "morphsaver.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/justanyone/MorphSaver"
+
+[tool.setuptools.packages.find]
+include = ["morphsaver*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q -p no:cacheprovider"
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
