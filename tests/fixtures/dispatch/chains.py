@@ -58,6 +58,24 @@ def set_membership(kind):  # FOUND: literal-set with `in`, 3 arms
         return 3
 
 
+def flag_chain(ready):  # FOUND: flag, 3 arms (third arm is unreachable; it only pads the count)
+    if ready:
+        return 1
+    elif not ready:
+        return 0
+    elif not ready:
+        return -1
+
+
+def type_is_chain(node):  # FOUND: type, 3 arms, `type(x) is T`
+    if type(node) is dict:
+        return "d"
+    elif type(node) is list:
+        return "l"
+    elif type(node) is str:
+        return "s"
+
+
 def two_arms(kind):  # not found: below min_arms
     if kind == "a":
         return 1
