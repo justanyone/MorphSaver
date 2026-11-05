@@ -1,0 +1,2 @@
+- Plan: packaging check (pyproject version, __init__ version, README verify, ci.yml install job, docs/release.md). Fixture-first not needed for non-scanner change; add test for --version.
+- pip install in venv blocked by sandbox; verifying with python3 -m morphsaver instead.
