@@ -50,8 +50,12 @@ def test_emit_markdown_from_verdicts(tmp_path):
     payload["step"] = "judge"
     (rd / "verdicts.json").write_text(json.dumps(payload))
     main(["emit", str(target), "--run", "v1", "--format", "markdown"])
-    tasks = list((rd / "tasks").glob("*.md"))
+    tasks = sorted(p for p in (rd / "tasks").glob("*.md") if p.name != "README.md")
     assert len(tasks) == 1 and "Acceptance criteria" in tasks[0].read_text()
+    assert (rd / "tasks" / "README.md").exists()
+    first = {p.name: p.read_bytes() for p in (rd / "tasks").iterdir()}
+    main(["emit", str(target), "--run", "v1", "--format", "markdown"])
+    assert {p.name: p.read_bytes() for p in (rd / "tasks").iterdir()} == first
 
 
 def test_module_entry_point():
