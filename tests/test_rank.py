@@ -100,3 +100,48 @@ def test_hot_bonus_loads_from_policy(tmp_path):
     c = candidates()[0]
     c.hot = ["C901"]
     assert rank([c], policy)[0].score == c.lines_saved + 7.5 - policy.no_tests_penalty
+
+
+def test_caller_queries_are_cached_per_function(monkeypatch):
+    from dataclasses import replace
+
+    monkeypatch.setattr(shutil, "which", lambda tool: "/tools/" + tool)
+    queries = []
+
+    def run(argv, **kwargs):
+        if Path(argv[0]).name == "codegraph":
+            queries.append(tuple(argv))
+        return fake_run(argv, **kwargs)
+
+    monkeypatch.setattr(subprocess, "run", run)
+    first, second = candidates()
+    second.sites = [replace(first.sites[0], line=3), first.sites[0]]
+    ranked = rank([first, second], Policy(), FIXTURE)
+    assert len(queries) == 1
+    assert all(c.callers == 2 for c in ranked)
+
+
+def test_evidence_is_replaced_when_tools_disappear(monkeypatch):
+    monkeypatch.setattr(shutil, "which", lambda tool: tool)
+    monkeypatch.setattr(subprocess, "run", fake_run)
+    result = rank(candidates(), Policy(), FIXTURE)
+    monkeypatch.setattr(shutil, "which", lambda tool: None)
+    result = rank(result, Policy(), FIXTURE)
+    assert all(c.hot == [] and c.callers == -1 for c in result)
+
+
+def test_malformed_records_are_ignored(monkeypatch):
+    monkeypatch.setattr(shutil, "which", lambda tool: tool)
+
+    def run(argv, **kwargs):
+        if argv[0] == "ruff":
+            payload = [None, {"code": "C901", "filename": "handlers.py", "location": {"row": "1"}},
+                       {"code": "C901", "filename": "../outside.py", "location": {"row": 1}}]
+        elif argv[0] == "radon":
+            payload = {"handlers.py": [None, {"lineno": "1", "rank": "C"}, {"lineno": 1, "rank": "Z"}]}
+        else:
+            return SimpleNamespace(returncode=2, stdout="")
+        return SimpleNamespace(returncode=0, stdout=json.dumps(payload))
+
+    monkeypatch.setattr(subprocess, "run", run)
+    assert all(c.hot == [] and c.callers == -1 for c in rank(candidates(), Policy(), FIXTURE))

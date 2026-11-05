@@ -4,3 +4,4 @@ Check missing tools, test references, deterministic reruns, and invalid tool out
 Run focused tests, then the required gate. Leave all commits to the launcher.
 Fixture and adapter tests are next; rank already stores hot/tests/callers, so no JSON schema change is needed.
 The 9 new tests failed before implementation. Added tool adapters, AST test references, rerun reset, and the hot weight; checking focused tests next.
+Focused tests pass (9 tests, 1.67 s command wall time; rank fixture has 2 candidates). Added constant docs and checks for cached callers and stale evidence.
