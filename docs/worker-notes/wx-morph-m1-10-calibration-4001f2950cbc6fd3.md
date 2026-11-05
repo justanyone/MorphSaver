@@ -22,3 +22,4 @@
 - Added repo A table: dispatch_chain 27, repeated_dispatch 3, parallel_functions 139, data_clump 564, flag_argument 0. Scan 183.683 s; rank and full judgment remain incomplete.
 - Final pipeline checkpoint: repo A completed scan/rank/packet in 319.246 s (scan 183.683, rank 135.258, packet 0.188). Both source-only runs produced 25 packets. Full manual calibration remains incomplete.
 - Stopped with partial calibration recorded on disk. Both source-only runs completed; repo A judgment and final repo B review/emit are still required. Defaults and scanners are unchanged. Gate GREEN (77 tests, 4.964 s); focused checks 35 passed; fixture scan 26 files, 30 candidates, 0.051 s. Diff whitespace check passed. No git writes or network calls were made.
+- 2026-11-05T06:45:47Z launcher: about 60 s to the time limit of 14 minutes; 781 s elapsed. Files changed so far: .codegraph/.gitignore, docs/calibration.md, docs/worker-notes/wx-morph-m1-10-calibration-4001f2950cbc6fd3.md.
