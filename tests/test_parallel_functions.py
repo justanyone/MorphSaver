@@ -27,7 +27,7 @@ def test_module_family_and_cost():
     assert candidate.dup_lines == 8
     assert candidate.overhead_lines == 6 + 4 * 4
     assert candidate.lines_saved == -14
-    assert scanner.scan_all([records("unrelated.py")], Policy()) == []
+    assert not scanner.scan_all([records("unrelated.py")], Policy())
 
 
 def test_package_table_and_alias():
@@ -35,8 +35,8 @@ def test_package_table_and_alias():
     found = scanner.scan_all(inputs, Policy())
     assert len(found) == 1 and len(found[0].sites) == 3
     assert {s.function for s in found[0].sites} == {"render", "encode", "decode"}
-    assert scanner.scan_all(inputs[:1], Policy()) == []
-    assert scanner.scan_all([inputs[0], records("package/second.py", "other/")], Policy()) == []
+    assert not scanner.scan_all(inputs[:1], Policy())
+    assert not scanner.scan_all([inputs[0], records("package/second.py", "other/")], Policy())
 
 
 def test_stable_ids_order_and_duplicate_launch():
@@ -56,7 +56,7 @@ def test_runs_and_threads_do_not_share_state():
     with ThreadPoolExecutor(max_workers=4) as pool:
         output = list(pool.map(run, ["results.py", "unrelated.py"] * 4))
     assert [len(result) for result in output] == [1, 0] * 4
-    assert scanner.scan_all([], Policy()) == []
+    assert not scanner.scan_all([], Policy())
 
 
 @pytest.mark.parametrize("threshold", [-0.1, 1.1, float("nan")])
@@ -77,7 +77,7 @@ def test_similarity_threshold_and_package_name_affinity():
     assert len(scanner.scan_all(inputs, Policy())[0].sites) == 4
     separate = [scanner.collect(ast.Module(body=nodes[:2], type_ignores=[]), "a.py", Policy()),
                 scanner.collect(ast.Module(body=nodes[2:], type_ignores=[]), "b.py", Policy())]
-    assert scanner.scan_all(separate, Policy()) == []
+    assert not scanner.scan_all(separate, Policy())
 
 
 def test_cli_cross_file_side_output(tmp_path):
@@ -97,3 +97,11 @@ def test_cli_cross_file_side_output(tmp_path):
     assert len(candidates) == 1 and len(candidates[0].sites) == 3
     cmd_scan(args)
     assert (tmp_path / "out.json").read_bytes() == output
+
+
+def test_missing_function_end_line():
+    tree = ast.parse("def alpha(value):\n    return value\n")
+    tree.body[0].end_lineno = None
+    record = scanner.collect(tree, "module.py", Policy())
+    assert record.functions[0].site.end_line == 2
+    assert record.functions[0].site.lines == 1

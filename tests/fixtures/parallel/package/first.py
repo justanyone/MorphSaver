@@ -12,3 +12,6 @@ def encode(value):
 
 
 HANDLERS = {"a": render, "b": encode, "c": decoder}
+
+
+__all__ = ['HANDLERS']
