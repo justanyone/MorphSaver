@@ -1,1 +1,2 @@
 - start: packet sections; reading packet.py, model.py, tests
+- wrote tests/test_packet.py first (sketch parse, sections, callers unknown, 40-site cap); next: packet.py rewrite
