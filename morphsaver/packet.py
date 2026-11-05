@@ -66,7 +66,7 @@ def build(target: Path, c: Candidate, policy: Policy) -> str:
     tail = ["## Proposed shape: " + c.shape, "", "```python", *sketch.splitlines(), "```", "",
             "## Callers", "", *_callers_lines(c), "",
             "## Tests", "", *_tests_lines(c), "",
-            JUDGE_QUESTIONS]
+            *JUDGE_QUESTIONS.splitlines()]
     out = [f"# {c.id}", "",
            f"scanner: {c.scanner}   shape: {c.shape}   policy: {c.policy}   verdict: {c.verdict or '-'}",
            (f"score: {c.score}   lines_saved: {c.lines_saved} (dup {c.dup_lines} - overhead {c.overhead_lines})   "

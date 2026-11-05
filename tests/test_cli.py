@@ -26,6 +26,11 @@ def test_run_pipeline_on_fixture(tmp_path):
     assert all(c.lines_saved == c.dup_lines - c.overhead_lines for c in ranked)
     packets = sorted((rd / "packets").glob("*.md"))
     assert len(packets) == 3 and "## Judge" in packets[0].read_text()
+    for packet in packets:  # every packet: one H1 and all sections in order
+        text = packet.read_text()
+        assert sum(ln.startswith("# ") for ln in text.splitlines()) == 1
+        marks = ["## Sites", "## Proposed shape", "## Callers", "## Tests", "## Judge"]
+        assert [text.index(m) for m in marks] == sorted(text.index(m) for m in marks)
 
 
 def test_rank_is_deterministic(tmp_path):

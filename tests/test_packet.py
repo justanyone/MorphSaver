@@ -1,4 +1,5 @@
 import ast
+import dataclasses
 import re
 from pathlib import Path
 
@@ -50,8 +51,8 @@ def test_forty_sites_stay_under_cap_with_cut_note(tmp_path):
     (tmp_path / "big.py").write_text(body)
     policy = Policy()
     c = _candidate("big.py", "dict-table", sites=40)
-    for s in c.sites:
-        s.end_line = s.line + 19  # 40 sites of 20 lines each: far over the cap
+    # 40 sites of 20 lines each: far over the cap
+    c.sites = [dataclasses.replace(s, end_line=s.line + 19) for s in c.sites]
     text = build(tmp_path, c, policy)
     assert len(text.splitlines()) < policy.packet_max_lines
     assert "cut by packet_max_lines" in text
