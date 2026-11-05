@@ -130,6 +130,27 @@ def test_evidence_is_replaced_when_tools_disappear(monkeypatch):
     assert all(c.hot == [] and c.callers == -1 for c in result)
 
 
+def test_failed_caller_queries_warn_once_and_are_cached(monkeypatch, capsys):
+    monkeypatch.setattr(shutil, "which", lambda tool: tool)
+    queries = []
+
+    def run(argv, **kwargs):
+        if argv[0] == "codegraph":
+            queries.append(tuple(argv))
+            return SimpleNamespace(returncode=2, stdout="")
+        return fake_run(argv, **kwargs)
+
+    monkeypatch.setattr(subprocess, "run", run)
+    entries = candidates()
+    entries.append(candidates()[0])
+    result = rank(entries, Policy(), FIXTURE)
+    assert all(c.callers == -1 for c in result)
+    assert len(queries) == 2
+    assert capsys.readouterr().err.splitlines() == [
+        "warning: codegraph: unavailable or invalid output; enrichment skipped"
+    ]
+
+
 def test_malformed_records_are_ignored(monkeypatch):
     monkeypatch.setattr(shutil, "which", lambda tool: tool)
 

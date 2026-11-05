@@ -7,6 +7,7 @@ def handle(kind):
         return 3
 
 
+# Known false positive for test references: no test calls this function.
 def untouched(kind):
     if kind == "x":
         return 4

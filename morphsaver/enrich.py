@@ -118,6 +118,38 @@ def _caller_count(stdout):
     raise ValueError("expected a CodeGraph node")
 
 
+def _hot_codes(candidate, spans, hits):
+    hot = set()
+    for site in candidate.sites:
+        span = spans.get((site.file, site.function, site.line))
+        if span:
+            hot.update(code for rel, row, code in hits if rel == site.file and span[0] <= row <= span[1])
+    return sorted(hot)
+
+
+def _candidate_callers(candidate, callers, run, target):
+    counts = {}
+    for site in candidate.sites:
+        if site.function == "<module>":
+            continue
+        key = (site.file, site.function)
+        if key not in callers:
+            callers[key] = run("codegraph", ["node", site.function, "--path", str(target), "--file", site.file],
+                               _caller_count)
+        if callers[key] is not None:
+            counts[key] = callers[key]
+    return sum(counts.values()) if counts else -1
+
+
+def _apply_evidence(candidates, spans, references, hits, run, target):
+    callers = {}
+    for candidate in candidates:
+        names = {s.function.rsplit(".", 1)[-1] for s in candidate.sites if s.function != "<module>"}
+        candidate.tests = sorted({rel for rel, refs in references if names & refs})
+        candidate.hot = _hot_codes(candidate, spans, hits)
+        candidate.callers = _candidate_callers(candidate, callers, run, target)
+
+
 def enrich(candidates, policy: Policy, target: Path) -> None:
     target = target.resolve()
     spans = _functions(target, candidates)
@@ -150,25 +182,4 @@ def enrich(candidates, policy: Policy, target: Path) -> None:
     hits.extend(run("ruff", ["check", "--select", "C901,PLR0912,PLR0911", "--output-format", "json", str(target)],
                     lambda out: _ruff(out, target)) or [])
     hits.extend(run("radon", ["cc", "-j", str(target)], lambda out: _radon(out, target)) or [])
-    callers = {}
-    for c in candidates:
-        c.hot, c.tests, c.callers = [], [], -1
-        names = {s.function.rsplit(".", 1)[-1] for s in c.sites if s.function != "<module>"}
-        c.tests = sorted({rel for rel, refs in references if names & refs})
-        hot = set()
-        counts = []
-        for site in c.sites:
-            span = spans.get((site.file, site.function, site.line))
-            if span:
-                hot.update(code for rel, row, code in hits if rel == site.file and span[0] <= row <= span[1])
-            key = (site.file, site.function)
-            if site.function == "<module>":
-                continue
-            if key not in callers:
-                callers[key] = run("codegraph", ["node", site.function, "--path", str(target), "--file", site.file],
-                                   _caller_count)
-            if callers[key] is not None:
-                counts.append((key, callers[key]))
-        c.hot = sorted(hot)
-        if counts:
-            c.callers = sum(dict(counts).values())
+    _apply_evidence(candidates, spans, references, hits, run, target)
