@@ -1,7 +1,6 @@
 import ast
 import dataclasses
 import re
-from pathlib import Path
 
 from morphsaver.model import SHAPES, Candidate, Site
 from morphsaver.packet import build
