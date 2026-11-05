@@ -10,3 +10,6 @@ def handle(kind, host, port, user):
 # Known false positive: same parameter names, different function, no shared site.
 def other(host, port, user):
     return f"{host}:{port}@{user}"
+
+
+__all__ = ["handle", "other"]  # both functions are scanner inputs, not callers

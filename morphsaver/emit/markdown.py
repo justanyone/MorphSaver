@@ -6,6 +6,7 @@ from pathlib import Path
 from ..model import Candidate
 
 NAME = "markdown"
+__all__ = ["NAME", "depends_map", "emit", "readme_text", "task_text", "title_of"]  # NAME is read by emit/__init__.py
 ACCEPTED = {"accept", "dict-table"}
 
 

@@ -39,7 +39,7 @@ def test_unchanged_task_is_not_rewritten(tmp_path):
     first = markdown.emit(cands, tmp_path, {})
     assert len(first) == 4  # three tasks + README
     before = {p.name: p.stat().st_mtime_ns for p in tmp_path.iterdir()}
-    assert markdown.emit(cands, tmp_path, {}) == []
+    assert not markdown.emit(cands, tmp_path, {})
     assert {p.name: p.stat().st_mtime_ns for p in tmp_path.iterdir()} == before
 
 
@@ -53,5 +53,5 @@ def test_emit_twice_is_byte_identical(tmp_path):
 def test_readme_lists_each_title_once_with_delta_and_dependency(tmp_path):
     markdown.emit(_cands(), tmp_path, {})
     readme = (tmp_path / "README.md").read_text()
-    assert readme.count("| `d1.md`") == 1 and readme.count("| `c1.md`") == 1
+    assert readme.count("| `d1.md`") == 1 == readme.count("| `c1.md`")
     assert "| -5 | c1 |" in readme and "| -3 | - |" in readme
