@@ -65,7 +65,7 @@ def cmd_rank(a, rd: Path | None = None):
     target = Path(a.target).resolve()
     rd = rd or (run_dir(target, a.run) if a.run else latest_run(target))
     candidates, _ = read_file(rd / "candidates.json")
-    ranked = rank_mod.rank(candidates, Policy.load(target))
+    ranked = rank_mod.rank(candidates, Policy.load(target), target)
     write_file(rd / "ranked.json", "rank", ranked, {"target": str(target)})
     print(f"rank: {len(ranked)} candidates -> {rd / 'ranked.json'}")
     return rd

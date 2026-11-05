@@ -25,6 +25,7 @@ class Policy:
     base_overhead: int = 6
     sites_weight: float = 1.5
     site_bonus: float = 2.0
+    hot_bonus: float = 3.0
     risk_weight: float = 0.2
     no_tests_penalty: float = 10.0
     include: list[str] = field(default_factory=lambda: ["**/*.py"])

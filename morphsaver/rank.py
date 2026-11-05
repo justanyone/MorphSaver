@@ -1,10 +1,13 @@
 """rank: the cost model. Deterministic: same candidates and policy give the same order.
 
 lines_saved = dup_lines - overhead. Negative is reported, never hidden (ADR 0005).
-A single-site candidate with lines_saved <= 0 keeps shape dict-table. Tool enrichment (ruff, radon, CodeGraph) is a later ticket.
+A single-site candidate with lines_saved <= 0 keeps shape dict-table. Optional evidence is collected when a target is supplied.
 """
 from __future__ import annotations
 
+from pathlib import Path
+
+from .enrich import enrich
 from .model import Candidate
 from .policy import Policy
 
@@ -27,10 +30,12 @@ def cost(c: Candidate, policy: Policy) -> None:
     # sites_weight multiplies a positive saving only; a negative saving must not get worse for having more sites.
     # site_bonus rewards every extra site that collapses, whatever the sign, so repetition outranks a lone chain.
     gain = c.lines_saved * (policy.sites_weight if sites > 1 and c.lines_saved > 0 else 1.0)
-    c.score = round(gain + policy.site_bonus * (sites - 1) - risk - penalty, 2)
+    c.score = round(gain + policy.site_bonus * (sites - 1) + len(set(c.hot)) * policy.hot_bonus - risk - penalty, 2)
 
 
-def rank(candidates: list[Candidate], policy: Policy) -> list[Candidate]:
+def rank(candidates: list[Candidate], policy: Policy, target: Path | None = None) -> list[Candidate]:
+    if target is not None:
+        enrich(candidates, policy, target)
     for c in candidates:
         cost(c, policy)
     return sorted(candidates, key=lambda c: (-c.score, -len(c.sites), c.id))
