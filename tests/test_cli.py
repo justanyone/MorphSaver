@@ -14,10 +14,13 @@ def test_run_pipeline_on_fixture(tmp_path):
     target.mkdir()
     for f in FIXTURES.glob("*.py"):
         (target / f.name).write_text(f.read_text())
+    for source in (FIXTURES.parent / "repeated" / "overlap").glob("*.py"):
+        (target / source.name).write_text(source.read_text())
     assert main(["run", str(target), "--run", "t1", "--top", "3"]) == 0
     rd = target / ".morphsaver" / "runs" / "t1"
     candidates, meta = read_file(rd / "candidates.json")
-    assert meta["files"] == 4 and len(candidates) == 12  # 9 dispatch_chain + 3 repeated_dispatch (false_positives.py added by M1-02)
+    # Three overlap fixtures add 3 chains and a group with the existing enum chain.
+    assert meta["files"] == 7 and len(candidates) == 16  # 12 dispatch_chain + 4 repeated_dispatch
     ranked, _ = read_file(rd / "ranked.json")
     assert ranked[0].scanner == "repeated_dispatch"             # the group outranks every single site
     assert all(c.lines_saved == c.dup_lines - c.overhead_lines for c in ranked)

@@ -1,3 +1,13 @@
+from enum import Enum
+
+
+class Kind(Enum):
+    A = "A"
+    B = "B"
+    C = "C"
+    D = "D"
+
+
 def render(kind):
     if kind == Kind.A:
         return 0

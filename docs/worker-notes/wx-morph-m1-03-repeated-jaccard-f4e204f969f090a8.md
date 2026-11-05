@@ -4,3 +4,4 @@ Check stable union ids, policy levels, and repeat-run output with focused tests.
 Run the offline gate and record runtime and fixture counts for the launcher.
 Fixtures now cover three-file overlap, weak overlap, and enum/bare/literal equivalence; regression tests cover state, concurrency, thresholds, and duplicate inputs.
 The initial focused run failed on missing overlap sites, input order/duplicates, and invalid thresholds. After the fix, all 18 focused tests pass. Added the exact 0.6 boundary and transitive union regression next.
+All 19 focused tests pass; CLI integration now expects 16 candidates (12 single chains and 4 groups). The first gate stopped at lint because enum fixtures lacked symbol definitions; added real Enum definitions and bare aliases before rerunning.

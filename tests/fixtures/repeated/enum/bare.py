@@ -1,3 +1,8 @@
+from .enum import Kind
+
+A, B, C, D = Kind
+
+
 def describe(category):
     if category == A:
         return 0
