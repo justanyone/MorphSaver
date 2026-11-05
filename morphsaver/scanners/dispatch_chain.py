@@ -87,7 +87,7 @@ def body_lines(arm) -> int:
 
 
 def normalise(value: str) -> str:
-    """Strip quotes and a leading Enum class so 'a', "a" and Kind.A compare equal across sites."""
+    """Strip literal quotes or enum qualifiers so 'A', A and module.Kind.A compare equal."""
     v = value.strip()
     if len(v) >= 2 and v[0] == v[-1] and v[0] in "'\"":
         return v[1:-1]

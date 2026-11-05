@@ -1,5 +1,7 @@
 """Qualified enum names must join bare members and string literals."""
 
+from . import enum as domain
+
 
 def serialize(category):
     if category == domain.Kind.A:

@@ -131,6 +131,12 @@ def test_repeated_enum_bare_and_literal_names_group():
     assert groups[0].values == ("A", "B", "C", "D")
 
 
+def test_normalise_preserves_dotted_literals_and_numbers():
+    assert dispatch_chain.normalise("domain.Kind.A") == "A"
+    assert dispatch_chain.normalise("'domain.Kind.A'") == "domain.Kind.A"
+    assert dispatch_chain.normalise("1.25") == "1.25"
+
+
 def test_repeated_is_order_independent_and_does_not_keep_state():
     from concurrent.futures import ThreadPoolExecutor
 
