@@ -94,6 +94,9 @@ def cmd_emit(a):
 
 
 def cmd_run(a):
+    if a.out:
+        # rank and packet need the run directory; a file path here would break them.
+        raise SystemExit("run: --out is not supported; use `scan --out` and then rank and packet")
     rd = cmd_scan(a)
     cmd_rank(a, rd)
     cmd_packet(a, rd)
