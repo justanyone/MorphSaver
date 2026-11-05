@@ -28,12 +28,14 @@ def test_run_pipeline_on_fixture(tmp_path):
 def test_rank_is_deterministic(tmp_path):
     target = tmp_path / "repo"
     target.mkdir()
-    (target / "a.py").write_text((FIXTURES / "chains.py").read_text())
+    for source in (FIXTURES.parent / "repeated" / "overlap").glob("*.py"):
+        (target / source.name).write_text(source.read_text())
     main(["run", str(target), "--run", "r1"])
     main(["run", str(target), "--run", "r2"])
-    a = (target / ".morphsaver/runs/r1/ranked.json").read_text()
-    b = (target / ".morphsaver/runs/r2/ranked.json").read_text()
-    assert a == b
+    for filename in ("ranked.json", "candidates.json"):
+        a = (target / ".morphsaver/runs/r1" / filename).read_bytes()
+        b = (target / ".morphsaver/runs/r2" / filename).read_bytes()
+        assert a == b
 
 
 def test_emit_markdown_from_verdicts(tmp_path):
