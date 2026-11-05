@@ -49,6 +49,7 @@ def cmd_scan(a) -> Path:
             found.extend(scanner.scan(tree, rel, policy))
     for scanner in scanners.CROSS_FILE:
         found.extend(scanner.scan_all(found, policy))
+    found = [c for c in found if not (c.scanner == "data_clump" and c.discriminator_kind == "fact")]
     out = Path(a.out) if a.out else run_dir(target, a.run) / "candidates.json"
     write_file(out, "scan", found, {"target": str(target), "files": files, "syntax_errors": errors,
                                     "scanners": sorted(scanners.ALL), "morphsaver": __version__})
