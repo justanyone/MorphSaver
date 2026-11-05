@@ -83,6 +83,16 @@ def _ruff(stdout, target):
     return hits
 
 
+def _radon_letter(item):
+    letter = item.get("rank")
+    if letter in tuple("ABCDEF"):
+        return letter
+    complexity = item.get("complexity")
+    if type(complexity) is int and complexity >= 0:
+        return "ABCDEF"[sum(complexity > limit for limit in (5, 10, 20, 30, 40))]
+    return None
+
+
 def _radon(stdout, target):
     data = json.loads(stdout)
     if not isinstance(data, dict):
@@ -95,8 +105,8 @@ def _radon(stdout, target):
         for item in items:
             if not isinstance(item, dict):
                 continue
-            row, letter = item.get("lineno"), item.get("rank")
-            if item.get("type") != "class" and type(row) is int and row > 0 and letter in tuple("ABCDEF"):
+            row, letter = item.get("lineno"), _radon_letter(item)
+            if item.get("type") != "class" and type(row) is int and row > 0 and letter is not None:
                 hits.append((rel, row, "radon:" + letter))
             blocks(item.get("methods", []), rel)
             blocks(item.get("closures", []), rel)

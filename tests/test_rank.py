@@ -175,3 +175,23 @@ def test_radon_numeric_complexity(monkeypatch):
     by_name = {c.sites[0].function: c for c in rank(candidates(), Policy(), FIXTURE)}
     assert by_name["handle"].hot == ["radon:C"]
     assert by_name["untouched"].hot == ["radon:A"]
+
+
+@pytest.mark.parametrize("complexity, letter", [
+    (0, "A"), (5, "A"), (6, "B"), (10, "B"), (11, "C"), (20, "C"),
+    (21, "D"), (30, "D"), (31, "E"), (40, "E"), (41, "F"),
+])
+def test_radon_complexity_boundaries(monkeypatch, complexity, letter):
+    monkeypatch.setattr(shutil, "which", lambda tool: tool if tool == "radon" else None)
+    output = json.dumps({"handlers.py": [{"lineno": 1, "complexity": complexity}]})
+    monkeypatch.setattr(subprocess, "run", lambda *a, **k: SimpleNamespace(returncode=0, stdout=output))
+    entry = candidates()[0]
+    assert rank([entry], Policy(), FIXTURE)[0].hot == ["radon:" + letter]
+
+
+@pytest.mark.parametrize("complexity", [-1, True, "12", None, [], {}])
+def test_invalid_radon_complexity_is_ignored(monkeypatch, complexity):
+    monkeypatch.setattr(shutil, "which", lambda tool: tool if tool == "radon" else None)
+    output = json.dumps({"handlers.py": [{"lineno": 1, "complexity": complexity}]})
+    monkeypatch.setattr(subprocess, "run", lambda *a, **k: SimpleNamespace(returncode=0, stdout=output))
+    assert all(c.hot == [] for c in rank(candidates(), Policy(), FIXTURE))
