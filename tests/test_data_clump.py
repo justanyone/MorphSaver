@@ -55,4 +55,4 @@ def test_output_is_deterministic():
 def test_fewer_than_four_sites_is_not_a_clump(tmp_path):
     (tmp_path / "x.py").write_text("def f(host, port, token):\n    return host\n\n\ndef g(host, port, token):\n    return port\n")
     facts = data_clump.scan(ast.parse((tmp_path / "x.py").read_text()), "x.py", Policy())
-    assert data_clump.scan_all(facts, Policy()) == []
+    assert not data_clump.scan_all(facts, Policy())
