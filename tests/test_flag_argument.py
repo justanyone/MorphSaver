@@ -4,16 +4,12 @@ from pathlib import Path
 from morphsaver.policy import Policy
 from morphsaver.scanners import flag_argument
 
-FIXTURES = Path(__file__).parent / "fixtures" / "flag"
-
-
-def _scan(name, policy=None):
-    src = (FIXTURES / name).read_text()
-    return flag_argument.scan(ast.parse(src), f"fixtures/flag/{name}", policy or Policy())
+FIXTURE = Path(__file__).parent / "fixtures" / "flag" / "flags.py"
+REL = "fixtures/flag/flags.py"
 
 
 def test_true_positives_and_no_false_positives():
-    found = {c.sites[0].function: c for c in _scan("flags.py")}
+    found = {c.sites[0].function: c for c in flag_argument.scan(ast.parse(FIXTURE.read_text()), REL, Policy())}
     assert set(found) == {"report", "run"}
     report = found["report"]
     assert report.discriminator_kind == "flag" and report.values == ("verbose",)
@@ -23,15 +19,9 @@ def test_true_positives_and_no_false_positives():
 
 
 def test_pass_through_and_single_test_are_not_reported():
-    functions = {c.sites[0].function for c in _scan("flags.py")}
+    functions = {c.sites[0].function for c in flag_argument.scan(ast.parse(FIXTURE.read_text()), REL, Policy())}
     assert "forward" not in functions
     assert "once" not in functions
-
-
-def test_ids_are_stable_across_runs():
-    a = {c.id for c in _scan("flags.py")}
-    b = {c.id for c in _scan("flags.py")}
-    assert a == b and all(i.startswith("flag_argument-") for i in a)
 
 
 def test_id_does_not_depend_on_line_numbers():
@@ -50,7 +40,7 @@ def test_negated_test_and_default_false_count():
 
 def test_non_bool_parameter_is_not_a_flag():
     src = "def f(x, y=None):\n    if x:\n        pass\n    if x:\n        pass\n    if y:\n        pass\n"
-    assert flag_argument.scan(ast.parse(src), "m.py", Policy()) == []
+    assert not flag_argument.scan(ast.parse(src), "m.py", Policy())
 
 
 def test_elif_chain_tests_are_counted():

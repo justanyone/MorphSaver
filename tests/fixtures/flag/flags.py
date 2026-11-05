@@ -1,5 +1,7 @@
 """Fixture for flag_argument. Each function name says what the scanner must do."""
 
+__all__ = ["report", "run", "forward", "once"]
+
 
 def report(items, verbose: bool):
     # True positive: `verbose` is the whole test of two top-level ifs.

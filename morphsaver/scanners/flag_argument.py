@@ -7,17 +7,17 @@ Passing the flag on to another call is not a test. Candidate id: hash of (file, 
 from __future__ import annotations
 
 import ast
-import hashlib
 
 from ..model import Candidate, Site
+from . import dispatch_chain
 
 NAME = "flag_argument"
 MIN_TESTS = 2
 
 
 def candidate_id(rel: str, function: str, flag: str) -> str:
-    digest = hashlib.sha1(f"{rel}|{function}|{flag}".encode()).hexdigest()[:10]
-    return f"{NAME}-{digest}"
+    """Same stable hash as dispatch_chain.candidate_id, with this scanner's prefix."""
+    return dispatch_chain.candidate_id(rel, function, flag).replace(dispatch_chain.NAME, NAME, 1)
 
 
 def _is_bool_annotation(ann) -> bool:
