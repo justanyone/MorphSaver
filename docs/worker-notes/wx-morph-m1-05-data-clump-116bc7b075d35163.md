@@ -1,0 +1,2 @@
+- Plan: fix lint findings: reuse dispatch_chain.body_lines, cut complexity in data_clump.py, make fixtures lint-clean (vulture/refurb), fix FURB115 in test.
+- Rewrote data_clump.py: reuse dispatch_chain.body_lines, split helpers for complexity. Next: fixtures lint-clean, test FURB115.
