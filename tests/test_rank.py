@@ -48,7 +48,7 @@ def fake_run(argv, **kwargs):
     if tool == "radon":
         payload = {"handlers.py": [{"name": "handle", "lineno": 1, "endline": 7, "rank": "C"}]}
         return SimpleNamespace(returncode=0, stdout=json.dumps(payload))
-    return SimpleNamespace(returncode=0, stdout="**Callers (2)**\n")
+    return SimpleNamespace(returncode=0, stdout="**Called by ←** first (a.py:1), second (b.py:2)\n")
 
 
 def test_enriched_reruns_are_deterministic(monkeypatch, tmp_path):
