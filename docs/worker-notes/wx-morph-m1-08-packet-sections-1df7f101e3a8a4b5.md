@@ -1,0 +1,1 @@
+- start: packet sections; reading packet.py, model.py, tests
