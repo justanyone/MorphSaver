@@ -17,7 +17,7 @@ def test_run_pipeline_on_fixture(tmp_path):
     assert main(["run", str(target), "--run", "t1", "--top", "3"]) == 0
     rd = target / ".morphsaver" / "runs" / "t1"
     candidates, meta = read_file(rd / "candidates.json")
-    assert meta["files"] == 3 and len(candidates) == 9  # 5 chains + 2 repeated singles + 2 groups (a,b,c,d twice in chains.py)
+    assert meta["files"] == 4 and len(candidates) == 12  # 9 dispatch_chain + 3 repeated_dispatch (false_positives.py added by M1-02)
     ranked, _ = read_file(rd / "ranked.json")
     assert ranked[0].scanner == "repeated_dispatch"             # the group outranks every single site
     assert all(c.lines_saved == c.dup_lines - c.overhead_lines for c in ranked)
