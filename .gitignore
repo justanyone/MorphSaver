@@ -8,3 +8,5 @@ build/
 .ruff_cache/
 # MorphSaver run outputs in any scanned repo, including this one
 .morphsaver/runs/
+# SkyBuild worker run files, never part of the repo
+WORKER_RULES.md

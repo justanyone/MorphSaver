@@ -38,6 +38,7 @@ def latest_run(target: Path) -> Path:
 def cmd_scan(a) -> Path:
     target, policy = Path(a.target).resolve(), Policy.load(Path(a.target).resolve())
     found, files, errors = [], 0, 0
+    records = {s.NAME: [] for s in scanners.CROSS_FILE if hasattr(s, "collect")}
     for path, rel in iter_files(target, policy):
         files += 1
         try:
@@ -47,8 +48,12 @@ def cmd_scan(a) -> Path:
             continue
         for scanner in scanners.PER_FILE:
             found.extend(scanner.scan(tree, rel, policy))
+        for scanner in scanners.CROSS_FILE:
+            if scanner.NAME in records:
+                records[scanner.NAME].append(scanner.collect(tree, rel, policy))
     for scanner in scanners.CROSS_FILE:
-        found.extend(scanner.scan_all(found, policy))
+        found.extend(scanner.scan_all(records.get(scanner.NAME, found), policy))
+    found = [c for c in found if not (c.scanner == "data_clump" and c.discriminator_kind == "fact")]
     out = Path(a.out) if a.out else run_dir(target, a.run) / "candidates.json"
     write_file(out, "scan", found, {"target": str(target), "files": files, "syntax_errors": errors,
                                     "scanners": sorted(scanners.ALL), "morphsaver": __version__})
@@ -60,7 +65,7 @@ def cmd_rank(a, rd: Path | None = None):
     target = Path(a.target).resolve()
     rd = rd or (run_dir(target, a.run) if a.run else latest_run(target))
     candidates, _ = read_file(rd / "candidates.json")
-    ranked = rank_mod.rank(candidates, Policy.load(target))
+    ranked = rank_mod.rank(candidates, Policy.load(target), target)
     write_file(rd / "ranked.json", "rank", ranked, {"target": str(target)})
     print(f"rank: {len(ranked)} candidates -> {rd / 'ranked.json'}")
     return rd
@@ -89,6 +94,9 @@ def cmd_emit(a):
 
 
 def cmd_run(a):
+    if a.out:
+        # rank and packet need the run directory; a file path here would break them.
+        raise SystemExit("run: --out is not supported; use `scan --out` and then rank and packet")
     rd = cmd_scan(a)
     cmd_rank(a, rd)
     cmd_packet(a, rd)

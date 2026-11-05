@@ -10,7 +10,9 @@ A model only ever reads a bounded set of evidence packets and gives verdicts. No
 ## Install
 
 ```sh
-pip install morphsaver            # or: pipx install morphsaver
+pipx install .                    # from a checkout of this repository
+# or: python3 -m venv .venv && .venv/bin/pip install .
+morphsaver --version              # prints 0.1.0
 ```
 
 Python 3.11 or newer, no dependencies. Optional: `ruff`, `radon` and `codegraph` on PATH enrich the ranking.
@@ -19,7 +21,7 @@ Python 3.11 or newer, no dependencies. Optional: `ruff`, `radon` and `codegraph`
 
 ```sh
 cd your-repo
-cp $(python -c 'import morphsaver,os;print(os.path.dirname(morphsaver.__file__))')/../docs/policy.example.toml .morphsaver/policy.toml  # optional
+mkdir -p .morphsaver && cp /path/to/MorphSaver/docs/policy.example.toml .morphsaver/policy.toml  # optional
 morphsaver run .                 # scan + rank + packet -> .morphsaver/runs/<timestamp>/
 ls .morphsaver/runs/*/packets    # one markdown packet per candidate, ready for a judge
 ```
@@ -54,3 +56,7 @@ judge skill are open tickets in `docs/tasks.md`.
 ## License
 
 MIT. Copyright (c) 2026 Kevin J. Rice.
+
+## Development cycles
+
+- dev-001 started 2026-11-04: milestone 1 (scan, rank, packet, markdown emit for Python).

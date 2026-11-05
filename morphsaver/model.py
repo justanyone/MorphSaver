@@ -30,6 +30,7 @@ class Site:
     values: tuple[str, ...] = ()
     has_else: bool = False
     kind: str = ""
+    all_return: bool = False
 
 
 @dataclass

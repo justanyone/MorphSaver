@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "morphsaver"
-version = "0.0.1"
+version = "0.1.0"
 description = "Find conditional-to-polymorphism and parallel-structure refactors in large codebases and emit session-ready tasks."
 readme = "README.md"
 license = { file = "LICENSE" }
