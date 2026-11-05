@@ -166,3 +166,12 @@ def test_malformed_records_are_ignored(monkeypatch):
 
     monkeypatch.setattr(subprocess, "run", run)
     assert all(c.hot == [] and c.callers == -1 for c in rank(candidates(), Policy(), FIXTURE))
+
+
+def test_radon_numeric_complexity(monkeypatch):
+    monkeypatch.setattr(shutil, "which", lambda tool: tool if tool == "radon" else None)
+    output = (FIXTURE / "radon.json").read_text()
+    monkeypatch.setattr(subprocess, "run", lambda *a, **k: SimpleNamespace(returncode=0, stdout=output))
+    by_name = {c.sites[0].function: c for c in rank(candidates(), Policy(), FIXTURE)}
+    assert by_name["handle"].hot == ["radon:C"]
+    assert by_name["untouched"].hot == ["radon:A"]
