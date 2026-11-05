@@ -1,3 +1,4 @@
 - start: packet sections; reading packet.py, model.py, tests
 - wrote tests/test_packet.py first (sketch parse, sections, callers unknown, 40-site cap); next: packet.py rewrite
 - packet.py rewritten; packet-format.md updated; test_cli sections check added; next: run gate
+- fixed tail line count (JUDGE multi-line); rerun gate next

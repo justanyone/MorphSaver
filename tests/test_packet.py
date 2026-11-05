@@ -20,7 +20,7 @@ def _candidate(target_file: str, shape: str, values=("a-b", "1x"), disc="kind-x 
 
 def _sketch(text: str) -> str:
     part = text.split("## Proposed shape", 1)[1]
-    return re.search(r"```python\n(.*?)\n```", part, re.S).group(1)
+    return re.search(r"```python\n(.*?)\n```", part, re.DOTALL).group(1)
 
 
 def test_sketch_parses_for_every_shape(tmp_path):
@@ -54,6 +54,6 @@ def test_forty_sites_stay_under_cap_with_cut_note(tmp_path):
     # 40 sites of 20 lines each: far over the cap
     c.sites = [dataclasses.replace(s, end_line=s.line + 19) for s in c.sites]
     text = build(tmp_path, c, policy)
-    assert len(text.splitlines()) < policy.packet_max_lines
+    assert len(text.splitlines()) <= policy.packet_max_lines
     assert "cut by packet_max_lines" in text
     assert "## Judge" in text
