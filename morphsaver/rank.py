@@ -13,7 +13,10 @@ def cost(c: Candidate, policy: Policy) -> None:
     arms = max((s.arms for s in c.sites), default=0)
     sites = len(c.sites)
     c.dup_lines = sum(s.lines for s in c.sites)
-    c.overhead_lines = arms * policy.class_overhead + policy.base_overhead + arms
+    if c.shape == "template-method":
+        c.overhead_lines = policy.base_overhead + sites * policy.class_overhead
+    else:
+        c.overhead_lines = arms * policy.class_overhead + policy.base_overhead + arms
     c.lines_saved = c.dup_lines - c.overhead_lines
     if sites == 1 and c.lines_saved <= 0:
         c.shape = "dict-table"

@@ -22,3 +22,8 @@ Order: by score descending, then site count descending, then id. Deterministic b
 
 Open calibration questions (ticket M1-07): are 4 and 6 right for Python with type hints and docstrings; should `match`
 arms count less overhead than if/elif since a `match` already is a table.
+
+For `template-method`, `dup_lines` is the sum of function body lines.
+Overhead is `base_overhead + member_count * class_overhead`.
+Count one base and one override per member. No dispatch registry is needed.
+Report negative savings without a lower bound.

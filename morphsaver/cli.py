@@ -38,6 +38,7 @@ def latest_run(target: Path) -> Path:
 def cmd_scan(a) -> Path:
     target, policy = Path(a.target).resolve(), Policy.load(Path(a.target).resolve())
     found, files, errors = [], 0, 0
+    records = {s.NAME: [] for s in scanners.CROSS_FILE if hasattr(s, "collect")}
     for path, rel in iter_files(target, policy):
         files += 1
         try:
@@ -47,8 +48,11 @@ def cmd_scan(a) -> Path:
             continue
         for scanner in scanners.PER_FILE:
             found.extend(scanner.scan(tree, rel, policy))
+        for scanner in scanners.CROSS_FILE:
+            if scanner.NAME in records:
+                records[scanner.NAME].append(scanner.collect(tree, rel, policy))
     for scanner in scanners.CROSS_FILE:
-        found.extend(scanner.scan_all(found, policy))
+        found.extend(scanner.scan_all(records.get(scanner.NAME, found), policy))
     out = Path(a.out) if a.out else run_dir(target, a.run) / "candidates.json"
     write_file(out, "scan", found, {"target": str(target), "files": files, "syntax_errors": errors,
                                     "scanners": sorted(scanners.ALL), "morphsaver": __version__})

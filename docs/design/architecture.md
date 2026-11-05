@@ -134,3 +134,13 @@ tools/test.sh, tools/gate.sh   what a build factory runs
 - Languages: Python `ast` is exact and free; tree-sitter adds one grammar per language. Chosen: Python v1, scanner interface ready for a parse-tree backend.
 - Where the model runs: judge and execute are session skills, so one repo serves Claude Code, Codex, or anything that runs a CLI and reads markdown. No API keys in the tool.
 - Separate repo vs a module of the host factory: separate costs a version pin; gains publishability and keeps host text out. Chosen: separate, with the factory as an emitter plugin plus a policy file in the factory's own repo.
+
+### Parallel function records
+
+The per-file pass collects function records as a separate side output.
+`parallel_functions.scan_all(records, policy)` consumes these records.
+Records hold skeleton tuples, sites, and module table references.
+They stay in memory for one scan. The JSON schema does not change.
+Families share a four-character name prefix or suffix, or one module dict table.
+A family stays within a module or the same package directory.
+All member pairs must meet the skeleton similarity threshold.
