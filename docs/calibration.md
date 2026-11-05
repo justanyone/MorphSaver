@@ -33,8 +33,8 @@ Each input uses `python3 -m morphsaver run <input> --top 25 --run calibration`.
 Scan, rank, and packet times use a monotonic clock at each CLI output line.
 Scan time includes interpreter startup. These are elapsed times, not CPU times.
 
-The runs are in progress. Precision is not measured yet. No default has changed.
-There is no evidence yet to support a threshold change.
+The results below separate broad attempts from source-only runs.
+No default has changed. The preliminary sample does not support a threshold change.
 
 ### Offline checks
 
@@ -47,7 +47,34 @@ precision sample. No scanner, schema, state, or launch behavior was changed.
 
 ### Later fixture tickets
 
-No new missed or false candidate has been established yet.
+Add fixtures for these cases before a later scanner change:
+
+- Repo B candidate `data_clump-8a0a7c6671` mixes a page limit with connection
+  and identity fields. Repeated names do not establish one parameter object.
+- Repo B candidates `data_clump-1d3781bb31` and `data_clump-661958eeaf`
+  overlap. Subset groups can use the packet budget without adding a new task.
+- Data-clump estimates count function bodies as saved lines. A parameter
+  object does not remove those bodies. Add a cost-model regression fixture.
+
+### Definition and dependencies
+
+The global top 25 does not guarantee a sample for each scanner. Report N/A when
+no candidate from a scanner was judged. Do not treat N/A as zero precision.
+A later stratified sample is needed before tuning each scanner's thresholds.
+There is no threshold-only fix for fields with different meanings or lifetimes.
+
+The broad repo B run scanned 412 files and found 274 candidates. It did not
+finish ranking within the 180 s limit. The attempt took 180.126 s.
+The broad repo A scan took 204.108 s and found 838 candidates in 423 files.
+Its ranking reported invalid or unavailable CodeGraph output at 380.809 s.
+No packets were available from these broad attempts at that checkpoint.
+The source-only retries use a standard-library baseline with optional tool
+executables absent from `PATH`. No external repository index was queried by
+those retries. The broad attempts had optional enrichment enabled.
+
+The final offline gate was GREEN in 4.964 s. Ruff passed. All 77 tests passed.
+The self-scan found 3 candidates in 18 files. No test required network access.
+No live observations or service tests were needed for this document change.
 
 ### Repo B: source-only standard-library run
 
