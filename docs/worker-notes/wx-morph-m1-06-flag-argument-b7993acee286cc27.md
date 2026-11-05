@@ -1,0 +1,1 @@
+- Plan: fixture tests/fixtures/flag (TP + FP), then flag_argument.py scanner, then test. Mirror dispatch_chain visitor.
