@@ -7,3 +7,6 @@ def encode(tag):
         return 2
     elif tag == 'G':
         return 3
+
+
+encode('A')

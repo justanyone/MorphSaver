@@ -7,3 +7,6 @@ def encode(category):
         return 2
     elif category == 'D':
         return 3
+
+
+encode('A')
