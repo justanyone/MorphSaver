@@ -16,3 +16,4 @@
 - Retry both source-only scans with an explicit src include policy and optional tool executables absent from PATH. This tests the standard-library baseline and avoids external graph enrichment. Thresholds stay at defaults.
 - 2026-11-05T06:40:46Z launcher: no commit for 60 s; 481 s elapsed. Files changed so far: .codegraph/.gitignore, docs/calibration.md, docs/worker-notes/wx-morph-m1-10-calibration-4001f2950cbc6fd3.md.
 - About five minutes remain. Repo B stdlib source run completed in 33.459 s; review is in progress. The broader optional-tools run timed out at 180.126 s. Repo A scan finished in 204.108 s; its first ranking remains pending.
+- 2026-11-05T06:42:17Z launcher: no commit for 60 s; 571 s elapsed. Files changed so far: .codegraph/.gitignore, docs/calibration.md, docs/worker-notes/wx-morph-m1-10-calibration-4001f2950cbc6fd3.md.
