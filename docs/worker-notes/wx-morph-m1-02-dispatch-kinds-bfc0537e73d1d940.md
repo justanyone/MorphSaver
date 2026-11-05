@@ -1,1 +1,2 @@
 - Plan: add flag/type/attr-call kinds + all_return to dispatch_chain, fixture first, tests after.
+- fixtures written (chains.py flag+type_is, false_positives.py). Next: scanner edits, all_return field, tests.
