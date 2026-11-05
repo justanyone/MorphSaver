@@ -81,6 +81,7 @@ No live observations or service tests were needed for this document change.
 The input policy includes `src/**/*.py`. All thresholds keep their defaults.
 Optional tool executables were absent from `PATH`. Ranking still uses AST test
 references. This run scanned 292 files with 0 syntax errors.
+The precision column below is provisional, pending full packet review.
 
 | Scanner | Candidates | Judged | True positives | Precision | Runtime |
 |---|---:|---:|---:|---:|---|
@@ -144,14 +145,23 @@ and found 733 candidates. It took 183.683 s. There were 0 syntax errors.
 | `flag_argument` | 0 | 0 | 0 | N/A | Shared scan: 183.683 s |
 
 Runtime covers the combined scan. Per-scanner time was not instrumented.
-Ranking was still in progress at the checkpoint. Packet generation and judging
-were not reached. Their runtimes and precision are unmeasured. Zero judged
-means no sample. It does not mean that all candidates are false positives.
+Ranking was still in progress at the first checkpoint. The final pipeline
+times are below. No repo A packet was judged. Zero judged means no sample.
+It does not mean that all candidates are false positives.
 
 ### Remaining work
 
-Finish the source-only repo A ranking and packet steps. Read its top 25 packets
-in full. Complete the repo B packet review before treating its provisional
+Read the top 25 repo A packets in full. Complete the repo B packet review
+before treating its provisional
 precision as final. Time the judge and emit steps. Run the markdown emitter
 only after final verdicts are ready. Keep the later fixture cases separate
 from this calibration ticket. No threshold change is supported yet.
+
+### Final pipeline checkpoint
+
+Both source-only CLI runs completed with exit status 0 and 25 packets each.
+Repo A rank took 135.258 s. Packet generation took 0.188 s.
+Its total run took 319.246 s. The earlier repo A checkpoint above
+preceded this completion. All 25 repo A packets still need manual judgment.
+Repo B full packet review, judge timing, and emit remain incomplete.
+The report is partial. The gate is GREEN, but calibration is not complete.

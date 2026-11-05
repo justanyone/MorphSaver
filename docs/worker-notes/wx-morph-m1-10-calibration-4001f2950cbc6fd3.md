@@ -20,3 +20,5 @@
 - Recorded a preliminary signature-focused review of all 25 repo B packets: 6 accept, 19 reject. This is not a full packet review; manual review runtime was not measured. Saved provisional verdicts locally.
 - Recorded broad-run timing limits and later fixture cases. The global top 25 has no sample for four scanners in repo B; thresholds remain unchanged. Repo A stdlib ranking is still pending.
 - Added repo A table: dispatch_chain 27, repeated_dispatch 3, parallel_functions 139, data_clump 564, flag_argument 0. Scan 183.683 s; rank and full judgment remain incomplete.
+- Final pipeline checkpoint: repo A completed scan/rank/packet in 319.246 s (scan 183.683, rank 135.258, packet 0.188). Both source-only runs produced 25 packets. Full manual calibration remains incomplete.
+- Stopped with partial calibration recorded on disk. Both source-only runs completed; repo A judgment and final repo B review/emit are still required. Defaults and scanners are unchanged. Gate GREEN (77 tests, 4.964 s); focused checks 35 passed; fixture scan 26 files, 30 candidates, 0.051 s. Diff whitespace check passed. No git writes or network calls were made.
