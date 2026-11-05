@@ -8,3 +8,5 @@ Seven focused tests passed; one similarity fixture exceeded the intended edit si
 Nine focused tests pass, including concurrent runs, duplicate records, input validation, package isolation, and CLI output stability. Optimized subset removal before the 300k-line benchmark.
 Full scan benchmark: 300000 generated lines, 100 modules, 10 packages, 10 candidates, 10.454 s.
 Fixture counts: module positive 1 candidate / 4 sites; unrelated 0; package table 1 candidate / 3 sites. Use these measurements in the launcher commit message.
+The 300,000-line full scan completed in 10.454 s with 10 candidates. Gate stopped at import formatting before running tests; fixed the blank line and will rerun the gate.
+Final gate GREEN: ruff passed, all 17 offline tests passed, dogfood scan passed (17 files, 1 candidate). No unavailable tests. Diff whitespace check passed. Work complete; launcher owns commit and push.

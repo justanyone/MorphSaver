@@ -82,6 +82,7 @@ def test_similarity_threshold_and_package_name_affinity():
 
 def test_cli_cross_file_side_output(tmp_path):
     from argparse import Namespace
+
     from morphsaver.cli import cmd_scan
     from morphsaver.model import read_file
 
