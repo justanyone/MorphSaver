@@ -128,3 +128,30 @@ parameter names. Estimates add class overhead and credit no unverified deletions
 | 23 | `data_clump-2d7c720619` | reject | Provider services are separate from the connection and identity context. |
 | 24 | `data_clump-9bd880d52c` | reject | The entity selector is operation data; the remaining context overlaps rank 8. |
 | 25 | `data_clump-1a0ba98bec` | reject | Raw content is payload data, separate from dependencies and identity. |
+
+### Repo A: source-only standard-library run
+
+The input policy includes `src/**/*.py`. Thresholds keep their defaults.
+Optional tool executables were absent from `PATH`. The scan covered 303 files
+and found 733 candidates. It took 183.683 s. There were 0 syntax errors.
+
+| Scanner | Candidates | Judged | True positives | Precision | Runtime |
+|---|---:|---:|---:|---:|---|
+| `dispatch_chain` | 27 | 0 | 0 | N/A | Shared scan: 183.683 s |
+| `repeated_dispatch` | 3 | 0 | 0 | N/A | Shared scan: 183.683 s |
+| `parallel_functions` | 139 | 0 | 0 | N/A | Shared scan: 183.683 s |
+| `data_clump` | 564 | 0 | 0 | N/A | Shared scan: 183.683 s |
+| `flag_argument` | 0 | 0 | 0 | N/A | Shared scan: 183.683 s |
+
+Runtime covers the combined scan. Per-scanner time was not instrumented.
+Ranking was still in progress at the checkpoint. Packet generation and judging
+were not reached. Their runtimes and precision are unmeasured. Zero judged
+means no sample. It does not mean that all candidates are false positives.
+
+### Remaining work
+
+Finish the source-only repo A ranking and packet steps. Read its top 25 packets
+in full. Complete the repo B packet review before treating its provisional
+precision as final. Time the judge and emit steps. Run the markdown emitter
+only after final verdicts are ready. Keep the later fixture cases separate
+from this calibration ticket. No threshold change is supported yet.

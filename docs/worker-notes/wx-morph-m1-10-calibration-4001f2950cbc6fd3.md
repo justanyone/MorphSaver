@@ -19,3 +19,4 @@
 - 2026-11-05T06:42:17Z launcher: no commit for 60 s; 571 s elapsed. Files changed so far: .codegraph/.gitignore, docs/calibration.md, docs/worker-notes/wx-morph-m1-10-calibration-4001f2950cbc6fd3.md.
 - Recorded a preliminary signature-focused review of all 25 repo B packets: 6 accept, 19 reject. This is not a full packet review; manual review runtime was not measured. Saved provisional verdicts locally.
 - Recorded broad-run timing limits and later fixture cases. The global top 25 has no sample for four scanners in repo B; thresholds remain unchanged. Repo A stdlib ranking is still pending.
+- Added repo A table: dispatch_chain 27, repeated_dispatch 3, parallel_functions 139, data_clump 564, flag_argument 0. Scan 183.683 s; rank and full judgment remain incomplete.
