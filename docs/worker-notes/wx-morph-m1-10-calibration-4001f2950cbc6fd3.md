@@ -14,3 +14,4 @@
 - Started the final offline gate. Both large scan attempts still lack candidate output. No scanner or policy default changed.
 - Gate GREEN in 4.964 s: ruff, 77 tests, self-scan (18 files, 3 candidates). Repo B produced 274 candidates; packet review awaits ranking.
 - Retry both source-only scans with an explicit src include policy and optional tool executables absent from PATH. This tests the standard-library baseline and avoids external graph enrichment. Thresholds stay at defaults.
+- 2026-11-05T06:40:46Z launcher: no commit for 60 s; 481 s elapsed. Files changed so far: .codegraph/.gitignore, docs/calibration.md, docs/worker-notes/wx-morph-m1-10-calibration-4001f2950cbc6fd3.md.
