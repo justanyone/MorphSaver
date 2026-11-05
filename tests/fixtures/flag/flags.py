@@ -1,6 +1,6 @@
 """Fixture for flag_argument. Each function name says what the scanner must do."""
 
-__all__ = ["report", "run", "forward", "once"]
+__all__ = ["forward", "once", "report", "run"]
 
 
 def report(items, verbose: bool):
