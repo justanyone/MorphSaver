@@ -7,4 +7,5 @@ def test_handle():
 
 def test_unrelated_text():
     # A comment or a string is not a function reference.
-    assert "untouched"
+    text = "untouched"
+    assert text

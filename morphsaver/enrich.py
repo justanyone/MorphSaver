@@ -68,7 +68,7 @@ def _test_references(target: Path, policy: Policy):
 def _ruff(stdout, target):
     data = json.loads(stdout)
     if not isinstance(data, list):
-        raise ValueError("expected diagnostics")
+        raise TypeError("expected diagnostics")
     hits = []
     for item in data:
         if not isinstance(item, dict) or item.get("code") not in {"C901", "PLR0912", "PLR0911"}:
@@ -86,7 +86,7 @@ def _ruff(stdout, target):
 def _radon(stdout, target):
     data = json.loads(stdout)
     if not isinstance(data, dict):
-        raise ValueError("expected complexity blocks")
+        raise TypeError("expected complexity blocks")
     hits = []
 
     def blocks(items, rel):

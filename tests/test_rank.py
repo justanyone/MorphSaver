@@ -26,7 +26,7 @@ def test_missing_tools_and_test_references(monkeypatch, capsys):
     monkeypatch.setattr(shutil, "which", lambda name: None)
     ranked = rank(candidates(), Policy(), FIXTURE)
     by_name = {c.sites[0].function: c for c in ranked}
-    assert by_name["handle"].tests == ["test_handlers.py"]
+    assert by_name["handle"].tests == ["tests/references.py"]
     assert by_name["untouched"].tests == []
     for c in ranked:
         expected = c.lines_saved - (0 if c.tests else Policy().no_tests_penalty)
