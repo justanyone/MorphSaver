@@ -162,3 +162,17 @@ def test_repeated_rejects_invalid_jaccard():
     for threshold in (-0.1, 1.1, float("nan")):
         with pytest.raises(ValueError, match="jaccard"):
             repeated_dispatch.scan_all([], Policy(jaccard=threshold))
+
+
+def test_repeated_threshold_boundary_and_transitive_union():
+    from dataclasses import replace
+
+    singles = _repeated_singles("overlap")
+    # Adjacent sets share 3 of 5 union values (0.6). The end sets share only 2 of 6.
+    values = [("A", "B", "C", "D"), ("B", "C", "D", "E"), ("C", "D", "E", "F")]
+    singles = [replace(c, values=v, sites=[replace(c.sites[0], values=v)]) for c, v in zip(singles, values)]
+    groups = repeated_dispatch.scan_all(singles, Policy())
+    assert len(groups) == 1 and len(groups[0].sites) == 3
+    assert groups[0].values == ("A", "B", "C", "D", "E", "F")
+    assert repeated_dispatch.scan_all(singles, Policy(jaccard=0.61)) == []
+    assert repeated_dispatch.scan_all(list(reversed(singles)), Policy())[0].to_json() == groups[0].to_json()
