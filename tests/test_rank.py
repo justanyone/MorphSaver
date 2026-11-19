@@ -130,7 +130,8 @@ def test_evidence_is_replaced_when_tools_disappear(monkeypatch):
     assert all(c.hot == [] and c.callers == -1 for c in result)
 
 
-def test_failed_caller_queries_warn_once_and_are_cached(monkeypatch, capsys):
+def test_a_failed_tool_is_not_called_again(monkeypatch, capsys):
+    """One failure stops codegraph for the run: each retry would cost up to the 30 s timeout per site."""
     monkeypatch.setattr(shutil, "which", lambda tool: tool)
     queries = []
 
@@ -145,7 +146,7 @@ def test_failed_caller_queries_warn_once_and_are_cached(monkeypatch, capsys):
     entries.append(candidates()[0])
     result = rank(entries, Policy(), FIXTURE)
     assert all(c.callers == -1 for c in result)
-    assert len(queries) == 2
+    assert len(queries) == 1
     assert capsys.readouterr().err.splitlines() == [
         "warning: codegraph: unavailable or invalid output; enrichment skipped"
     ]

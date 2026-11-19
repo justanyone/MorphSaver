@@ -55,10 +55,15 @@ class Policy:
 
 
 def match(rel: str, glob: str) -> bool:
-    """fnmatch where a leading `**/` also matches a path with no directory part, so `**/*.py` matches `a.py`."""
+    """fnmatch where each `**/` also matches no directory, so `**/*.py` matches `a.py` and `src/**/*.py` matches `src/a.py`."""
     if fnmatch.fnmatch(rel, glob):
         return True
-    return glob.startswith("**/") and fnmatch.fnmatch(rel, glob[3:])
+    start = glob.find("**/")
+    while start != -1:
+        if (start == 0 or glob[start - 1] == "/") and match(rel, glob[:start] + glob[start + 3:]):
+            return True
+        start = glob.find("**/", start + 1)
+    return False
 
 
 def iter_files(target: Path, policy: Policy):
