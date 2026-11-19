@@ -183,6 +183,7 @@ def enrich(candidates, policy: Policy, target: Path) -> None:
             return parse(result.stdout)
         except (OSError, subprocess.SubprocessError, ValueError, TypeError, RecursionError):
             warning(tool, "unavailable or invalid output")
+            executables[tool] = None   # one failure stops the tool for this run: a per-site retry costs a timeout each
             return None
 
     for tool, executable in executables.items():
